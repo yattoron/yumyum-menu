@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memories · 溱溱有味</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    body { background: #f5efe6; margin: 0; }
+    .menu-wrap { position: fixed; top: 1rem; left: 1rem; z-index: 100; }
+    .menu-btn { width: 42px; height: 42px; border-radius: 50%; background: rgba(255,254,249,0.95); border: 1px solid rgba(212,165,116,0.4); font-size: 1.3rem; cursor: pointer; box-shadow: 0 2px 8px rgba(74,63,53,0.12); }
+    .menu-dropdown { display: none; position: absolute; top: 50px; left: 0; background: #fffef9; border-radius: 8px; box-shadow: 0 4px 16px rgba(74,63,53,0.15); overflow: hidden; min-width: 140px; }
+    .menu-dropdown.show { display: block; }
+    .menu-dropdown a { display: block; padding: 0.7rem 1.2rem; color: #4a3f35; text-decoration: none; font-size: 0.95rem; }
+    .menu-dropdown a:hover { background: #f8f4ec; }
+    .memories-header { text-align: center; padding: 3rem 1rem 1rem; }
+    .memories-header h1 { font-family: 'ZCOOL XiaoWei', 'Noto Serif TC', serif; font-size: 2rem; color: #4a3f35; margin: 0; }
+    .photo-wall { max-width: 1000px; margin: 2rem auto; padding: 2rem 1rem; position: relative; }
+    .string { position: absolute; top: 40px; left: 5%; right: 5%; height: 2px; background: #c4b8a8; z-index: 1; }
+    .photos { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem 1rem; padding-top: 20px; }
+    .polaroid { width: 160px; background: #fff; padding: 8px 8px 28px; box-shadow: 2px 4px 12px rgba(74,63,53,0.15); transform: rotate(var(--rot, 0deg)); transition: transform 0.3s; position: relative; z-index: 2; cursor: pointer; }
+    .polaroid:hover { transform: rotate(0deg) scale(1.05); z-index: 10; }
+    .polaroid img { width: 100%; height: 140px; object-fit: cover; display: block; }
+    .clip { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 16px; height: 20px; background: #d4a574; border-radius: 2px 2px 0 0; z-index: 3; }
+    .clip::after { content: ''; position: absolute; bottom: 0; left: 3px; right: 3px; height: 8px; background: #c47a5a; border-radius: 0 0 2px 2px; }
+    .back-link { display: block; text-align: center; margin: 2rem 0; color: #c47a5a; text-decoration: none; }
+    .empty-msg { text-align: center; color: #999; padding: 3rem; }
+    .mem-lb { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20,15,10,0); z-index: 500; align-items: center; justify-content: center; transition: background 0.6s ease; }
+    .mem-lb-content { transform: scale(0.85); opacity: 0; transition: transform 0.6s ease, opacity 0.6s ease; text-align: center; }
+    .mem-lb .pola-lg { width: 420px; background: #fff; padding: 14px 14px 48px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); margin: 0 auto; position: relative; }
+    .mem-lb .pola-lg img { width: 100%; height: 360px; object-fit: cover; display: block; }
+    .mem-date { position: absolute; bottom: 14px; left: 18px; color: #333; font-family: 'ZCOOL XiaoWei', cursive; font-size: 1rem; }
+    .mem-note { 
+      position: absolute; 
+      bottom: 14px; 
+      right: 18px; 
+      color: #333; 
+      font-family: 'ZCOOL XiaoWei', cursive; 
+      font-size: 0.9rem; 
+      text-align: right;
+      max-width: 180px;
+    }
+    .mem-close { position: absolute; top: 1rem; right: 1rem; background: rgba(255,254,249,0.2); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="menu-wrap">
+    <button class="menu-btn" id="menu-btn">☰</button>
+    <div class="menu-dropdown" id="menu-dropdown">
+      <a href="/">首頁</a>
+      <a href="/menu">私房菜菜單</a>
+      <a href="/about">關於我們</a>
+      <a href="/memories">Memories</a>
+    </div>
+  </div>
+  <div class="memories-header"><h1>Memories</h1></div>
+  <div class="photo-wall">
+    <div class="string"></div>
+    <div class="photos" id="photos"><!-- PHOTOS_PLACEHOLDER --></div>
+  </div>
+  <a href="/" class="back-link">← 返回首頁</a>
+
+  <div class="mem-lb" id="mem-lb">
+    <button class="mem-close" id="mem-close">×</button>
+    <div class="mem-lb-content">
+      <div class="pola-lg">
+        <img src="" alt="" id="mem-img">
+        <div class="mem-date" id="mem-date"></div>
+        <div class="mem-note" id="mem-note"></div>
+      </div>
+  </div>
+
+  <script>
+    document.getElementById('menu-btn').onclick = function(e) {
+      e.stopPropagation();
+      document.getElementById('menu-dropdown').classList.toggle('show');
+    };
+    document.onclick = function() {
+      document.getElementById('menu-dropdown').classList.remove('show');
+    };
+
+    var lb = document.getElementById('mem-lb');
+    var img = document.getElementById('mem-img');
+    var dateEl = document.getElementById('mem-date');
+    var noteEl = document.getElementById('mem-note');
+    var content = lb.querySelector('.mem-lb-content');
+
+    var polas = document.querySelectorAll('.polaroid');
+    for (var i = 0; i < polas.length; i++) {
+      polas[i].onclick = function() {
+        img.src = this.getAttribute('data-src') || '';
+        dateEl.textContent = this.getAttribute('data-date') || '';
+        noteEl.textContent = this.getAttribute('data-note') || '';
+        lb.style.display = 'flex';
+        setTimeout(function() {
+          lb.style.background = 'rgba(20,15,10,0.92)';
+          content.style.transform = 'scale(1)';
+          content.style.opacity = '1';
+        }, 20);
+      };
+    }
+
+    function closeLb() {
+      lb.style.background = 'rgba(20,15,10,0)';
+      content.style.transform = 'scale(0.85)';
+      content.style.opacity = '0';
+      setTimeout(function() { lb.style.display = 'none'; }, 600);
+    }
+    document.getElementById('mem-close').onclick = closeLb;
+    lb.onclick = function(e) { if (e.target === lb) closeLb(); };
+    document.onkeydown = function(e) { if (e.key === 'Escape') closeLb(); };
+  </script>
+</body>
+</html>

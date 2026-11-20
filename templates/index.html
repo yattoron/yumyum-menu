@@ -1,0 +1,830 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>溱溱有味 · 美食手帳</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .search-wrap {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 100;
+    }
+    .search-wrap input {
+      width: 180px;
+      padding: 0.5rem 0.9rem;
+      border: 1px solid rgba(212,165,116,0.45);
+      border-radius: 20px;
+      background: rgba(255,254,249,0.95);
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: #4a3f35;
+      box-shadow: 0 2px 8px rgba(74,63,53,0.1);
+    }
+    .search-wrap input:focus {
+      outline: none;
+      border-color: #c47a5a;
+    }
+    .search-wrap input::placeholder {
+      color: #aaa;
+    }
+
+    .menu-wrap {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 100;
+    }
+    .menu-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255,254,249,0.95);
+      border: 1px solid rgba(212,165,116,0.4);
+      font-size: 1.3rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(74,63,53,0.12);
+    }
+    .menu-dropdown {
+      display: none;
+      position: absolute;
+      top: 50px;
+      left: 0;
+      background: #fffef9;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(74,63,53,0.15);
+      overflow: hidden;
+      min-width: 140px;
+    }
+    .menu-dropdown.show { display: block; }
+    .menu-dropdown a {
+      display: block;
+      padding: 0.7rem 1.2rem;
+      color: #4a3f35;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .menu-dropdown a:hover { background: #f8f4ec; }
+
+    .lightbox-content {
+      max-width: min(92vw, 820px);
+      background: #fffef9;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 92vh;
+    }
+    .lightbox-body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex: 1;
+    }
+    @media (min-width: 700px) {
+      .lightbox-body { flex-direction: row; }
+    }
+    .lightbox-img-wrap {
+      flex: 1;
+      min-width: 0;
+      background: #f0e9dc;
+      position: relative;
+    }
+    .lightbox-img-wrap img {
+      width: 100%;
+      height: auto;
+      max-height: 70vh;
+      object-fit: contain;
+      display: block;
+    }
+    .lightbox-detail {
+      flex: 1;
+      min-width: 260px;
+      position: relative;
+      overflow: hidden;
+    }
+    .page {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #fffef9;
+      padding: 1.4rem 1.5rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: left center;
+      box-shadow: 2px 0 12px rgba(74,63,53,0.08);
+    }
+    .page.steps {
+      background: #f8f4ec;
+      transform: translateX(100%);
+      z-index: 2;
+    }
+    .page.steps.show { transform: translateX(0); }
+    .page.front { z-index: 1; }
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.6rem;
+      margin-bottom: 0.6rem;
+      padding-right: 40px;
+    }
+    .lightbox-detail h2 {
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif TC', serif;
+      font-size: 1.35rem;
+      margin: 0;
+      letter-spacing: 0.06em;
+      color: #4a3f35;
+      flex: 1;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 0.8rem; right: 1rem;
+      background: rgba(74,63,53,0.7);
+      color: #fff;
+      border: none;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .steps-toggle {
+      background: #fff;
+      border: 1px solid rgba(212,165,116,0.5);
+      border-radius: 16px;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      color: #6b5e52;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .steps-toggle:hover { background: #f8f4ec; }
+    .steps-toggle.active {
+      background: #c47a5a;
+      color: #fff;
+      border-color: #c47a5a;
+    }
+    .steps-content, .description-content {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #4a3f35;
+      white-space: pre-wrap;
+      margin-top: 0.5rem;
+    }
+    .desc-title {
+      font-size: 0.9rem;
+      color: #6b5e52;
+      margin: 0.2rem 0 0.4rem;
+    }
+    .like-area, .comment-area {
+      position: absolute;
+      bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,254,249,0.92);
+      padding: 4px 8px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(74,63,53,0.15);
+      z-index: 5;
+      cursor: pointer;
+    }
+    .like-area { left: 12px; }
+    .comment-area { right: 12px; }
+    .like-btn, .comment-icon {
+      background: none;
+      border: none;
+      font-size: 0.6rem;
+      cursor: pointer;
+      color: #c47a5a;
+      line-height: 1;
+      padding: 0;
+    }
+    .like-btn.pop { animation: heartPop 0.4s ease; }
+    @keyframes heartPop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.5); }
+      100% { transform: scale(1); }
+    }
+    .like-count, .comment-count { font-size: 0.9rem; color: #4a3f35; }
+    .work-card { position: relative; }
+    .floating-heart {
+      position: absolute;
+      pointer-events: none;
+      font-size: 1.2rem;
+      color: #e74c3c;
+      animation: floatUp 0.8s ease-out forwards;
+      z-index: 10;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-40px); }
+    }
+
+    .country-flag {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255,254,249,0.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      box-shadow: 0 2px 6px rgba(74,63,53,0.15);
+      z-index: 4;
+      border: 1px solid rgba(212,165,116,0.3);
+    }
+    .country-flag { top: 10px; right: 10px; }
+    .season-flag { top: 10px; left: 10px; }
+
+    .work-image-wrap {
+      position: relative !important;
+      width: 100% !important;
+      padding-top: 125% !important;
+      overflow: hidden !important;
+      background: #f0e9dc !important;
+    }
+    .work-image-wrap img {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
+
+    .expand-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 1rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .expand-btn {
+      background: #fff;
+      border: 1px solid rgba(212,165,116,0.45);
+      border-radius: 20px;
+      padding: 0.4rem 1.1rem;
+      font-size: 0.9rem;
+      color: #6b5e52;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .expand-btn:hover { background: #f8f4ec; }
+    .expand-content {
+      display: flex;
+      gap: 0.45rem;
+      overflow: hidden;
+      max-width: 0;
+      opacity: 0;
+      transition: max-width 0.4s ease, opacity 0.3s ease;
+    }
+    .expand-content.show {
+      max-width: 700px;
+      opacity: 1;
+    }
+    .filter-btn {
+      background: #fff;
+      border: 1px solid rgba(212,165,116,0.45);
+      border-radius: 20px;
+      padding: 0.45rem 1.2rem;
+      font-size: 0.9rem;
+      color: #6b5e52;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover { background: #f8f4ec; }
+    .filter-btn.active {
+      background: #c47a5a;
+      color: #fff;
+      border-color: #c47a5a;
+    }
+    .season-btn, .flag-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid rgba(212,165,116,0.4);
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .season-btn:hover, .flag-btn:hover { transform: scale(1.1); }
+    .season-btn.active, .flag-btn.active {
+      background: #c47a5a;
+      color: #fff;
+      border-color: #c47a5a;
+    }
+    .work-card.hidden { display: none; }
+
+    .season-effect {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      top: -10px;
+      animation: fall linear infinite;
+      opacity: 0.5;
+      font-size: 0.24rem;
+    }
+    @keyframes fall {
+      to { transform: translateY(100vh) rotate(360deg); }
+    }
+
+    /* 懸浮留言視窗 */
+    .comments-float {
+      display: none;
+      position: fixed;
+      width: 320px;
+      max-height: 400px;
+      background: #fffef9;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(74,63,53,0.2);
+      z-index: 300;
+      overflow: hidden;
+      flex-direction: column;
+    }
+    .comments-float.show { display: flex; }
+    .comments-float-header {
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid #eee4d8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+    .comments-float-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #999;
+    }
+    .comments-float-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem 1rem;
+      max-height: 220px;
+      font-size: 0.9rem;
+    }
+    .comments-float-form {
+      padding: 0.6rem 1rem;
+      border-top: 1px solid #eee4d8;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .comments-float-form input,
+    .comments-float-form textarea {
+      width: 100%;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid rgba(212,165,116,0.45);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+    .comments-float-form button {
+      align-self: flex-end;
+      padding: 0.35rem 0.9rem;
+      background: #c47a5a;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .comment-item { padding: 0.4rem 0; border-bottom: 1px solid #eee4d8; }
+    .comment-item .c-name { font-weight: 500; color: #4a3f35; }
+    .comment-item .c-time { font-size: 0.75rem; color: #999; margin-left: 0.4rem; }
+    .comment-item .c-text { margin-top: 0.1rem; color: #5a4e44; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div class="season-effect" id="season-effect"></div>
+
+  <div class="menu-wrap">
+    <button class="menu-btn" id="menu-btn">☰</button>
+    <div class="menu-dropdown" id="menu-dropdown">
+      <a href="/">首頁</a>
+      <a href="/menu">私房菜菜單</a>
+      <a href="/about">關於我們</a>
+      <a href="/memories">Memories</a>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <input type="text" id="search-input" placeholder="搜尋菜色..." autocomplete="off">
+  </div>
+
+  <header class="site-header">
+    <h1 class="logo">溱溱有味</h1>
+    <p class="tagline">老闆的私房菜菜單</p>
+  </header>
+
+  <div class="expand-row">
+    <button class="expand-btn" id="cat-toggle">分類 ▸</button>
+    <div class="expand-content" id="cat-content">
+      <!-- FILTER_PLACEHOLDER -->
+    </div>
+  </div>
+
+  <div class="expand-row">
+    <button class="expand-btn" id="season-toggle">季節 ▸</button>
+    <div class="expand-content" id="season-content">
+      <button class="season-btn active" data-season="all" title="不分季節">🌐</button>
+      <button class="season-btn" data-season="春" title="春">🌸</button>
+      <button class="season-btn" data-season="夏" title="夏">☀️</button>
+      <button class="season-btn" data-season="秋" title="秋">🍂</button>
+      <button class="season-btn" data-season="冬" title="冬">❄️</button>
+    </div>
+  </div>
+
+  <div class="expand-row">
+    <button class="expand-btn" id="country-toggle">國家 ▸</button>
+    <div class="expand-content" id="country-content">
+      <button class="flag-btn active" data-country="all" title="全部">🌍</button>
+      <button class="flag-btn" data-country="日本" title="日本">🇯🇵</button>
+      <button class="flag-btn" data-country="韓國" title="韓國">🇰🇷</button>
+      <button class="flag-btn" data-country="法國" title="法國">🇫🇷</button>
+      <button class="flag-btn" data-country="中國" title="中國">🇨🇳</button>
+      <button class="flag-btn" data-country="台灣" title="台灣">🇹🇼</button>
+      <button class="flag-btn" data-country="香港" title="香港">🇭🇰</button>
+      <button class="flag-btn" data-country="意大利" title="意大利">🇮🇹</button>
+      <button class="flag-btn" data-country="美國" title="美國">🇺🇸</button>
+      <button class="flag-btn" data-country="泰國" title="泰國">🇹🇭</button>
+      <button class="flag-btn" data-country="西班牙" title="西班牙">🇪🇸</button>
+      <button class="flag-btn" data-country="威爾士" title="威爾士">🏴󠁧󠁢󠁷󠁬󠁳󠁿</button>
+      <button class="flag-btn" data-country="印度" title="印度">🇮🇳</button>
+      <button class="flag-btn" data-country="Fusion" title="Fusion">🔀</button>
+    </div>
+  </div>
+
+  <main class="gallery">
+    <!-- WORKS_PLACEHOLDER -->
+  </main>
+
+  <footer class="site-footer">
+    <p>溱溱有味，係咁舔脷</p>
+  </footer>
+
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-content" style="position:relative;">
+      <button class="lightbox-close" id="lightbox-close" aria-label="關閉">×</button>
+      <div class="lightbox-body">
+        <div class="lightbox-img-wrap">
+          <img src="" alt="" id="lightbox-img">
+        </div>
+        <div class="lightbox-detail">
+          <div class="page front" id="page-front">
+            <div class="title-row">
+              <h2 id="lightbox-title"></h2>
+              <button class="steps-toggle" id="steps-toggle">煮食步驟</button>
+            </div>
+            <div class="desc-title">菜色簡介</div>
+            <div class="description-content" id="lightbox-desc"></div>
+          </div>
+          <div class="page steps" id="page-steps">
+            <div class="title-row">
+              <h2>煮食步驟</h2>
+              <button class="steps-toggle" id="steps-toggle-back">返回</button>
+            </div>
+            <div class="steps-content" id="steps-content"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="comments-float" id="comments-float">
+    <div class="comments-float-header">
+      <span>留言區</span>
+      <button class="comments-float-close" id="comments-float-close">×</button>
+    </div>
+    <div class="comments-float-body" id="comments-float-body"></div>
+    <form class="comments-float-form" id="comment-form">
+      <input type="text" id="comment-name" placeholder="你的名字（可留空）" maxlength="20">
+      <textarea id="comment-text" placeholder="寫下你的留言..." rows="2" required></textarea>
+      <button type="submit">送出</button>
+    </form>
+  </div>
+
+  <script>
+    let currentWorkId = null;
+    let currentSteps = '';
+    let currentDesc = '';
+    let currentCategory = 'all';
+    let currentCountry = 'all';
+    let selectedSeasons = new Set();
+
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxTitle = document.getElementById('lightbox-title');
+    const lightboxDesc = document.getElementById('lightbox-desc');
+    const stepsToggle = document.getElementById('steps-toggle');
+    const stepsToggleBack = document.getElementById('steps-toggle-back');
+    const pageSteps = document.getElementById('page-steps');
+    const stepsContent = document.getElementById('steps-content');
+    const closeBtn = document.getElementById('lightbox-close');
+
+    const catToggle = document.getElementById('cat-toggle');
+    const catContent = document.getElementById('cat-content');
+    const seasonToggle = document.getElementById('season-toggle');
+    const seasonContent = document.getElementById('season-content');
+    const countryToggle = document.getElementById('country-toggle');
+    const countryContent = document.getElementById('country-content');
+    const seasonEffect = document.getElementById('season-effect');
+
+    const commentsFloat = document.getElementById('comments-float');
+    const commentsFloatBody = document.getElementById('comments-float-body');
+    const commentsFloatClose = document.getElementById('comments-float-close');
+    const commentForm = document.getElementById('comment-form');
+
+    const menuBtn = document.getElementById('menu-btn');
+    const menuDropdown = document.getElementById('menu-dropdown');
+    if (menuBtn) {
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menuDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', () => menuDropdown.classList.remove('show'));
+    }
+
+    const SEASON_EMOJI = { "春": "🌸", "夏": "☀️", "秋": "🍂", "冬": "❄️" };
+
+    function applyFilters() {
+      const keyword = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
+      document.querySelectorAll('.work-card').forEach(card => {
+        const title = (card.dataset.title || '').toLowerCase();
+        const searchMatch = !keyword || title.includes(keyword);
+        const catMatch = currentCategory === 'all' || card.dataset.category === currentCategory;
+        const countryMatch = currentCountry === 'all' || card.dataset.country === currentCountry;
+        const seasonMatch = selectedSeasons.size === 0 || selectedSeasons.has(card.dataset.season || '');
+        if (searchMatch && catMatch && countryMatch && seasonMatch) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    function startSeasonEffect() {
+      seasonEffect.innerHTML = '';
+      if (selectedSeasons.size === 0) return;
+      selectedSeasons.forEach(season => {
+        const emoji = SEASON_EMOJI[season];
+        if (!emoji) return;
+        for (let i = 0; i < 15; i++) {
+          const p = document.createElement('div');
+          p.className = 'particle';
+          p.textContent = emoji;
+          p.style.left = Math.random() * 100 + 'vw';
+          p.style.animationDuration = (8 + Math.random() * 10) + 's';
+          p.style.animationDelay = Math.random() * 6 + 's';
+          seasonEffect.appendChild(p);
+        }
+      });
+    }
+
+    catToggle.addEventListener('click', () => {
+      catContent.classList.toggle('show');
+      catToggle.textContent = catContent.classList.contains('show') ? '分類 ◂' : '分類 ▸';
+    });
+    seasonToggle.addEventListener('click', () => {
+      seasonContent.classList.toggle('show');
+      seasonToggle.textContent = seasonContent.classList.contains('show') ? '季節 ◂' : '季節 ▸';
+    });
+    countryToggle.addEventListener('click', () => {
+      countryContent.classList.toggle('show');
+      countryToggle.textContent = countryContent.classList.contains('show') ? '國家 ◂' : '國家 ▸';
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCategory = btn.dataset.filter || 'all';
+        applyFilters();
+      });
+    });
+
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', applyFilters);
+    }
+
+    // 季節多選
+    document.querySelectorAll('.season-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const season = btn.dataset.season;
+        if (season === 'all') {
+          selectedSeasons.clear();
+          document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        } else {
+          document.querySelector('.season-btn[data-season="all"]').classList.remove('active');
+          if (selectedSeasons.has(season)) {
+            selectedSeasons.delete(season);
+            btn.classList.remove('active');
+          } else {
+            selectedSeasons.add(season);
+            btn.classList.add('active');
+          }
+          if (selectedSeasons.size === 0) {
+            document.querySelector('.season-btn[data-season="all"]').classList.add('active');
+          }
+        }
+        applyFilters();
+        startSeasonEffect();
+      });
+    });
+
+    document.querySelectorAll('.flag-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.flag-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCountry = btn.dataset.country;
+        applyFilters();
+      });
+    });
+
+    document.querySelectorAll('.work-card').forEach(card => {
+      card.addEventListener('click', async (e) => {
+        if (e.target.closest('.like-area') || e.target.closest('.comment-area')) return;
+        currentWorkId = card.dataset.id;
+        currentSteps = card.dataset.steps || '';
+        currentDesc = card.dataset.description || '';
+        lightboxImg.src = card.dataset.src;
+        lightboxImg.alt = card.dataset.title;
+        lightboxTitle.textContent = card.dataset.title;
+        lightboxDesc.textContent = currentDesc.trim() ? currentDesc : '尚未填寫簡介';
+        pageSteps.classList.remove('show');
+        stepsToggle.classList.remove('active');
+        stepsContent.textContent = currentSteps.trim() ? currentSteps : '尚未填寫煮食步驟';
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    // 懸浮留言視窗
+    let currentCommentWorkId = null;
+    document.querySelectorAll('.comment-area').forEach(area => {
+      area.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        currentCommentWorkId = area.dataset.id;
+        const rect = area.getBoundingClientRect();
+        commentsFloat.style.top = Math.min(rect.bottom + 8, window.innerHeight - 420) + 'px';
+        commentsFloat.style.left = Math.max(10, Math.min(rect.left - 100, window.innerWidth - 340)) + 'px';
+        try {
+          const res = await fetch('/comments/' + currentCommentWorkId);
+          const data = await res.json();
+          renderFloatComments(data.comments || []);
+          commentsFloat.classList.add('show');
+        } catch (err) {}
+      });
+    });
+
+    function renderFloatComments(comments) {
+      if (!comments.length) {
+        commentsFloatBody.innerHTML = '<div style="color:#999;padding:0.5rem;">還沒有留言</div>';
+        return;
+      }
+      commentsFloatBody.innerHTML = comments.map(c => `
+        <div class="comment-item">
+          <span class="c-name">${escapeHtml(c.name)}</span>
+          <span class="c-time">${c.time || ''}</span>
+          <div class="c-text">${escapeHtml(c.text)}</div>
+        </div>
+      `).join('');
+    }
+
+    commentsFloatClose.addEventListener('click', () => {
+      commentsFloat.classList.remove('show');
+      currentCommentWorkId = null;
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!commentsFloat.contains(e.target) && !e.target.closest('.comment-area')) {
+        commentsFloat.classList.remove('show');
+      }
+    });
+
+    if (commentForm) {
+      commentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentCommentWorkId) return;
+        const name = document.getElementById('comment-name').value.trim();
+        const text = document.getElementById('comment-text').value.trim();
+        if (!text) return;
+        try {
+          const res = await fetch('/comment/' + currentCommentWorkId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'name=' + encodeURIComponent(name) + '&text=' + encodeURIComponent(text)
+          });
+          const data = await res.json();
+          if (data.success) {
+            document.getElementById('comment-text').value = '';
+            renderFloatComments(data.comments || []);
+          }
+        } catch (err) {
+          alert('留言失敗，請再試一次');
+        }
+      });
+    }
+
+    stepsToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      pageSteps.classList.add('show');
+      stepsToggle.classList.add('active');
+    });
+    stepsToggleBack.addEventListener('click', (e) => {
+      e.stopPropagation();
+      pageSteps.classList.remove('show');
+      stepsToggle.classList.remove('active');
+    });
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+      pageSteps.classList.remove('show');
+      stepsToggle.classList.remove('active');
+      currentWorkId = null;
+    }
+
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeLightbox();
+    });
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeLightbox();
+        commentsFloat.classList.remove('show');
+      }
+    });
+
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        btn.classList.add('pop');
+        setTimeout(() => btn.classList.remove('pop'), 400);
+        const floating = document.createElement('span');
+        floating.className = 'floating-heart';
+        floating.textContent = '♥';
+        const rect = btn.getBoundingClientRect();
+        floating.style.left = (rect.left + rect.width / 2 - 8) + 'px';
+        floating.style.top = (rect.top - 10) + 'px';
+        document.body.appendChild(floating);
+        setTimeout(() => floating.remove(), 800);
+        try {
+          const res = await fetch('/like/' + id, { method: 'POST' });
+          const data = await res.json();
+          if (data.success) {
+            btn.nextElementSibling.textContent = data.likes;
+            btn.classList.add('liked');
+            btn.textContent = '♥';
+          }
+        } catch (err) {}
+      });
+    });
+  </script>
+</body>
+</html>

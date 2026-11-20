@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>後台登入 · 溱溱有味</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="admin-body">
+  <div class="admin-card">
+    <h1>溱溱有味</h1>
+    <p class="subtitle">後台上傳</p>
+    <!-- ERROR_PLACEHOLDER -->
+    <form method="POST" action="/admin">
+      <div class="form-group">
+        <label for="password">密碼</label>
+        <input type="password" id="password" name="password" required autofocus placeholder="請輸入密碼">
+      </div>
+      <button type="submit" class="btn">登入</button>
+    </form>
+  </div>
+</body>
+</html>

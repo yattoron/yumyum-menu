@@ -1,0 +1,411 @@
+/* ===== 溱溱有味 · 水彩美食手帳 ===== */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=ZCOOL+XiaoWei&display=swap');
+
+:root {
+  --paper: #f8f4ec;
+  --paper-dark: #f0e9dc;
+  --ink: #4a3f35;
+  --ink-soft: #6b5e52;
+  --accent: #c47a5a;
+  --accent-soft: #d4a574;
+  --warm: #e8d5c4;
+  --shadow: rgba(74, 63, 53, 0.12);
+  --card-shadow: 0 8px 24px rgba(74, 63, 53, 0.1), 0 2px 6px rgba(74, 63, 53, 0.06);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Noto Serif TC', 'Songti TC', serif;
+  background-color: var(--paper);
+  color: var(--ink);
+  line-height: 1.6;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at 20% 30%, rgba(232, 213, 196, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(212, 165, 116, 0.15) 0%, transparent 45%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+.site-header {
+  text-align: center;
+  padding: 3.5rem 1.5rem 2rem;
+  position: relative;
+}
+
+.site-header::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
+  margin: 1.2rem auto 0;
+}
+
+.logo {
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif TC', serif;
+  font-size: 2.6rem;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: 0.15em;
+  margin-bottom: 0.4rem;
+}
+
+.tagline {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.12em;
+  font-weight: 400;
+}
+
+.gallery {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 2.2rem 1.8rem;
+}
+
+.work-card {
+  background: #fffef9;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  position: relative;
+  border: 1px solid rgba(212, 165, 116, 0.25);
+  cursor: pointer;
+}
+
+.work-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 32px rgba(74, 63, 53, 0.14), 0 4px 10px rgba(74, 63, 53, 0.08);
+}
+
+.work-image-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 125%; /* 4:5 比例 */
+  overflow: hidden;
+  background: #f0e9dc;
+}
+.work-image-wrap img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.work-card:hover .work-image-wrap img {
+  transform: scale(1.03);
+}
+
+.work-info {
+  padding: 1rem 1.1rem 1.2rem;
+  text-align: center;
+}
+
+.work-title {
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif TC', serif;
+  font-size: 1.15rem;
+  color: var(--ink);
+  letter-spacing: 0.08em;
+  font-weight: 400;
+}
+
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(74, 63, 53, 0.85);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  cursor: zoom-out;
+}
+
+.lightbox.active {
+  display: flex;
+}
+
+.lightbox-content {
+  max-width: min(90vw, 520px);
+  max-height: 90vh;
+  position: relative;
+  cursor: default;
+}
+
+.lightbox-content img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+  background: #fff;
+}
+
+.lightbox-title {
+  text-align: center;
+  color: #f8f4ec;
+  margin-top: 1rem;
+  font-family: 'ZCOOL XiaoWei', serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.1em;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -2.2rem;
+  right: 0;
+  background: none;
+  border: none;
+  color: #f8f4ec;
+  font-size: 1.8rem;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.lightbox-close:hover {
+  opacity: 1;
+}
+
+.site-footer {
+  text-align: center;
+  padding: 2rem 1rem 3rem;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+}
+
+.admin-body {
+  background: var(--paper);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.admin-card {
+  background: #fffef9;
+  border: 1px solid rgba(212, 165, 116, 0.3);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+  padding: 2.5rem 2.2rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.admin-card h1 {
+  font-family: 'ZCOOL XiaoWei', serif;
+  font-size: 1.6rem;
+  text-align: center;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.1em;
+}
+
+.admin-card .subtitle {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.3rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+  color: var(--ink-soft);
+}
+
+.form-group input[type="password"],
+.form-group input[type="text"],
+.form-group input[type="file"] {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(212, 165, 116, 0.45);
+  border-radius: 4px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.6rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.15s;
+  width: 100%;
+  text-align: center;
+}
+
+.btn:hover {
+  background: #b36a4a;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.error-msg {
+  background: #fde8e4;
+  color: #a14a3a;
+  padding: 0.7rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+
+.admin-dashboard {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-header h1 {
+  font-family: 'ZCOOL XiaoWei', serif;
+  font-size: 1.8rem;
+  letter-spacing: 0.1em;
+}
+
+.admin-actions a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-left: 1.2rem;
+}
+
+.admin-actions a:hover {
+  color: var(--accent);
+}
+
+.upload-section {
+  background: #fffef9;
+  border: 1px solid rgba(212, 165, 116, 0.3);
+  border-radius: 8px;
+  padding: 1.8rem;
+  margin-bottom: 2.5rem;
+  box-shadow: var(--card-shadow);
+}
+
+.upload-section h2 {
+  font-size: 1.15rem;
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.06em;
+}
+
+.works-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.work-item {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  background: #fffef9;
+  border: 1px solid rgba(212, 165, 116, 0.25);
+  border-radius: 6px;
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 2px 8px rgba(74, 63, 53, 0.05);
+}
+
+.work-item img {
+  width: 64px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.work-item-info {
+  flex: 1;
+}
+
+.work-item-info .title {
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+
+.work-item-info .date {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.btn-delete {
+  background: transparent;
+  border: 1px solid #c47a5a;
+  color: #c47a5a;
+  padding: 0.4rem 0.9rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-delete:hover {
+  background: #c47a5a;
+  color: #fff;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 600px) {
+  .logo {
+    font-size: 2.1rem;
+  }
+  .gallery {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.4rem 1rem;
+    padding: 1rem 1rem 3.5rem;
+  }
+  .work-title {
+    font-size: 1rem;
+  }
+}

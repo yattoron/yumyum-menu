@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>關於我們 · 溱溱有味</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .menu-wrap {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 100;
+    }
+    .menu-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255,254,249,0.95);
+      border: 1px solid rgba(212,165,116,0.4);
+      font-size: 1.3rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(74,63,53,0.12);
+    }
+    .menu-dropdown {
+      display: none;
+      position: absolute;
+      top: 50px;
+      left: 0;
+      background: #fffef9;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(74,63,53,0.15);
+      overflow: hidden;
+      min-width: 140px;
+    }
+    .menu-dropdown.show { display: block; }
+    .menu-dropdown a {
+      display: block;
+      padding: 0.7rem 1.2rem;
+      color: #4a3f35;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .menu-dropdown a:hover { background: #f8f4ec; }
+
+    body { background: #f7f1e6; }
+    .page-wrap {
+      max-width: 680px;
+      margin: 4rem auto;
+      padding: 2rem;
+      background: #fffef9;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(74,63,53,0.08);
+    }
+    .page-wrap h1 {
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif TC', serif;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: #4a3f35;
+    }
+    .page-wrap p {
+      line-height: 1.8;
+      color: #5a4e44;
+      margin-bottom: 1rem;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      color: #c47a5a;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="menu-wrap">
+    <button class="menu-btn" id="menu-btn">☰</button>
+    <div class="menu-dropdown" id="menu-dropdown">
+      <a href="/">首頁</a>
+      <a href="/menu">私房菜菜單</a>
+      <a href="/about">關於我們</a>
+      <a href="/memories">Memories</a>
+    </div>
+  </div>
+  <div class="page-wrap">
+    <h1>關於我們</h1>
+    <p>溱溱有味，是一份溫柔的美食手帳。</p>
+    <p>這裡記錄著老闆的私房菜，用畫筆把每一道菜的溫度留下來。</p>
+    <p>歡迎慢慢翻看，也歡迎留下你的食後感。</p>
+    <a href="/" class="back-link">← 返回首頁</a>
+  </div>
+  <script>
+    document.getElementById('menu-btn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('menu-dropdown').classList.toggle('show');
+    });
+    document.addEventListener('click', function() {
+      document.getElementById('menu-dropdown').classList.remove('show');
+    });
+  </script>
+
+</body>
+</html>
